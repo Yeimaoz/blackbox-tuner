@@ -17,3 +17,14 @@ def objective(params):
 result = tune(schema=schema, objective=objective, config=TuningConfig(n_trials=50, seed=7))
 print(result.best_params, result.best_score)
 ```
+
+## Development checks
+
+Before release:
+
+```bash
+python -m pytest -v
+python -m build
+```
+
+The test suite includes a public-boundary scan to keep examples and package files generic.
