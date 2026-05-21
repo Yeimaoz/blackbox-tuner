@@ -54,7 +54,7 @@ class TrialEvent:
             "error": self.error,
         }
         try:
-            json.dumps(payload, sort_keys=True)
-        except TypeError as exc:
+            json.dumps(payload, allow_nan=False, sort_keys=True)
+        except (TypeError, ValueError) as exc:
             raise SerializationError("trial event must be JSON-serializable") from exc
         return payload

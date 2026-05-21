@@ -21,6 +21,18 @@ def test_rejects_non_json_metric_value():
         result.to_json_dict()
 
 
+def test_rejects_non_finite_score():
+    result = ObjectiveResult(score=float("nan"))
+    with pytest.raises(SerializationError, match="JSON-serializable"):
+        result.to_json_dict()
+
+
+def test_rejects_non_finite_metric_value():
+    result = ObjectiveResult(score=1.0, metrics={"bad": float("inf")})
+    with pytest.raises(SerializationError, match="JSON-serializable"):
+        result.to_json_dict()
+
+
 def test_trial_event_serializes():
     event = TrialEvent(
         run_id="run-1",

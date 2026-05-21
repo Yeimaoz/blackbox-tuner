@@ -12,5 +12,7 @@ class TuningConfig:
     run_id: str | None = None
 
     def __post_init__(self) -> None:
+        if self.direction not in {"maximize", "minimize"}:
+            raise ValueError("direction must be 'maximize' or 'minimize'")
         if self.n_trials <= 0:
             raise ValueError("n_trials must be positive")

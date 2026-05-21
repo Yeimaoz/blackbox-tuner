@@ -115,3 +115,8 @@ def test_checkpoint_failure_emits_run_failed_to_healthy_sink():
         )
 
     assert healthy.events[-1].event_type == "run_failed"
+
+
+def test_tuning_config_rejects_invalid_direction():
+    with pytest.raises(ValueError, match="direction"):
+        TuningConfig(direction="sideways")  # type: ignore[arg-type]

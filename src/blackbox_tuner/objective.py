@@ -39,6 +39,6 @@ def normalize_objective_result(value: float | int | ObjectiveResult) -> Objectiv
 
 def _assert_json_serializable(value: Any) -> None:
     try:
-        json.dumps(value, sort_keys=True)
-    except TypeError as exc:
+        json.dumps(value, allow_nan=False, sort_keys=True)
+    except (TypeError, ValueError) as exc:
         raise SerializationError("objective result must be JSON-serializable") from exc
