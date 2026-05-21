@@ -1,5 +1,6 @@
 """Public API for blackbox-tuner."""
 
+from .checkpoints import CheckpointSink, JsonlCheckpoint
 from .config import TuningConfig
 from .errors import TrialPruned
 from .events import TrialEvent
@@ -10,8 +11,10 @@ __version__ = "0.1.0"
 
 __all__ = [
     "CategoricalParam",
+    "CheckpointSink",
     "FloatParam",
     "IntParam",
+    "JsonlCheckpoint",
     "ObjectiveResult",
     "ParamSchema",
     "TrialEvent",
