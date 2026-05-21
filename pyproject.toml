@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blackbox-tuner"
+version = "0.1.0"
+description = "Black-box hyperparameter tuning with structured checkpoints and reviewable trial history."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "blackbox-tuner contributors"}]
+dependencies = ["optuna>=3.6"]
+keywords = ["optimization", "hyperparameter-tuning", "optuna", "checkpointing"]
+
+[project.optional-dependencies]
+dev = ["build>=1.2", "pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
