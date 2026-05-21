@@ -18,6 +18,66 @@ result = tune(schema=schema, objective=objective, config=TuningConfig(n_trials=5
 print(result.best_params, result.best_score)
 ```
 
+## How Optuna Works
+
+```text
+User code
+  │
+  ├─ define ParamSchema
+  ├─ define objective(params)
+  └─ call tune(...)
+        │
+        ▼
+   blackbox_tuner.tune()
+        │
+        ├─ create Study
+        ├─ emit run_started
+        │
+        └─ for each Trial
+              │
+              ├─ Sampler suggests params
+              │
+              ├─ emit trial_started
+              │
+              ├─ run objective(params)
+              │     ├─ return float
+              │     │   └─ normalize to ObjectiveResult
+              │     ├─ return ObjectiveResult
+              │     ├─ raise TrialPruned
+              │     └─ raise Exception
+              │
+              ├─ emit trial_completed / trial_pruned / trial_failed
+              │
+              ├─ update best result if improved
+              │
+              └─ Pruner may stop bad trials early
+                    │
+                    ▼
+               run_completed
+```
+
+```text
+Study
+  ├─ owns the whole tuning session
+  ├─ stores trial history
+  └─ returns best params / best score
+
+Trial
+  ├─ one parameter set
+  ├─ one objective evaluation
+  └─ one result record
+
+Sampler
+  ├─ decides the next params
+  ├─ learns from past trials
+  └─ balances exploration and exploitation
+
+Pruner
+  ├─ watches a running trial
+  ├─ stops clearly bad runs early
+  └─ saves compute
+```
+
 ## Development checks
 
 Before release:
