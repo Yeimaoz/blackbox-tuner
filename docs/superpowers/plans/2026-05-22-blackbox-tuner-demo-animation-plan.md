@@ -1053,6 +1053,48 @@ git add README.md
 git commit -m "docs: document demo usage and deployment"
 ```
 
+## Task 6: Code Review and Signoff
+
+**Files:**
+- None. This task validates the finished work and records the review outcome.
+
+- [ ] **Step 1: Run the final review checklist**
+
+Run:
+
+```bash
+npm test
+npm run test:e2e
+npm run build
+git status --short
+git diff --check
+```
+
+Expected:
+
+- Unit tests pass.
+- Browser smoke passes.
+- Build succeeds.
+- Working tree is clean.
+- No whitespace or patch-format errors remain.
+
+- [ ] **Step 2: Verify the public boundary again**
+
+Check that:
+
+- `src/api-copy.ts` only contains public API names and static overlay copy.
+- `src/cases.ts` contains only synthetic demo cases.
+- No runtime Python integration exists anywhere in the demo repo.
+- `package-lock.json` is committed.
+- The Playwright and GitHub Pages steps are present in the plan and workflow.
+
+- [ ] **Step 3: Request review on the public branch or PR**
+
+If the demo repo is being merged through a PR, request review from the maintainer before merge.
+If the repo is being published directly on `main`, record the review outcome in the repo history and confirm the final push is the reviewed state.
+
+Expected: the demo is signoff-ready and the published state matches the reviewed state.
+
 ## Follow-Up Plan
 
 After the demo repo is working, the next improvement path is:
