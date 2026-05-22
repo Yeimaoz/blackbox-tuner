@@ -18,6 +18,8 @@ Create a new repository at:
 
 Do not add frontend runtime code to the `blackbox-tuner` library repo. This demo repo must remain separate and public.
 
+Before implementation starts, install the repo dependencies from the new workspace so the generated `package-lock.json` is committed with the first shell. The plan assumes `npm install` is run in the demo repo root after `package.json` exists, and that Playwright browser binaries are installed before the browser smoke step.
+
 ## File Structure
 
 Create:
@@ -53,6 +55,7 @@ Do not create a backend, database, or runtime Python integration. The demo must 
 - Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/main.ts`
 - Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/app.ts`
 - Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/api-copy.ts`
+- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/cases.ts`
 - Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/styles.css`
 - Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/README.md`
 - Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/tests/cases.test.ts`
@@ -145,6 +148,50 @@ const CASES: DemoCase[] = [
     pruneProfile: "light",
     convergenceProfile: "quick",
     notes: "Useful for showing the happy path.",
+  },
+  {
+    id: "prune_heavy",
+    title: "Prune Heavy",
+    summary: "Most early trials are cut before completion.",
+    tags: ["pruning", "short-circuit"],
+    searchSpace: ["x: int[0,20]", "y: float[0,1]"],
+    objectiveProfile: "noisy",
+    pruneProfile: "heavy",
+    convergenceProfile: "slow",
+    notes: "Shows frequent early exits and best-updated recovery.",
+  },
+  {
+    id: "noisy_landscape",
+    title: "Noisy Landscape",
+    summary: "Scores wobble before the sampler settles.",
+    tags: ["noise", "oscillation"],
+    searchSpace: ["x: int[0,30]", "temperature: float[0,2]"],
+    objectiveProfile: "noisy",
+    pruneProfile: "light",
+    convergenceProfile: "oscillating",
+    notes: "Keeps the curve moving so the demo can show uncertainty.",
+  },
+  {
+    id: "multi_modal",
+    title: "Multi Modal",
+    summary: "Several local optima compete before one wins.",
+    tags: ["local-minima", "exploration"],
+    searchSpace: ["x: int[0,40]", "y: float[0,1]"],
+    objectiveProfile: "multimodal",
+    pruneProfile: "late",
+    convergenceProfile: "slow",
+    notes: "Demonstrates exploration before exploitation.",
+  },
+  {
+    id: "plateau_then_drop",
+    title: "Plateau Then Drop",
+    summary: "The search stalls, then suddenly finds a much better region.",
+    tags: ["plateau", "late-breakthrough"],
+    searchSpace: ["x: int[0,50]", "cooldown: float[0,1]"],
+    objectiveProfile: "plateau",
+    pruneProfile: "late",
+    convergenceProfile: "slow",
+    notes: "Useful for showing why patience matters.",
   },
 ];
 
@@ -282,7 +329,256 @@ Create `tsconfig.json`:
 
 The app must build from `src/main.ts` and deploy under the `/blackbox-tuner-demo/` GitHub Pages base path.
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [ ] **Step 2: Install dependencies and generate the lockfile**
+
+Run:
+
+```bash
+npm install
+```
+
+Expected: `node_modules/` is created and `package-lock.json` is written at the repo root.
+
+- [ ] **Step 3: Run the test to verify it fails**
+
+Run:
+
+```bash
+npm test -- tests/cases.test.ts -v
+```
+
+Expected: FAIL because `src/api-copy.ts` and `src/cases.ts` do not exist yet.
+
+- [ ] **Step 4: Write the minimal implementation**
+
+Create `src/api-copy.ts`:
+
+```typescript
+export const PUBLIC_API_NAMES = [
+  "ParamSchema",
+  "objective",
+  "tune()",
+  "ObjectiveResult",
+  "TuningConfig",
+  "TrialEvent",
+  "TrialPruned",
+] as const;
+
+export const API_OVERLAY_COPY = [
+  "ParamSchema defines the search space.",
+  "objective receives params and returns a score.",
+  "tune() runs the session and emits events.",
+] as const;
+```
+
+Create `src/cases.ts`:
+
+```typescript
+export type DemoCase = {
+  id: string;
+  title: string;
+  summary: string;
+  tags: string[];
+  searchSpace: string[];
+  objectiveProfile: "fast" | "noisy" | "multimodal" | "plateau";
+  pruneProfile: "light" | "heavy" | "late";
+  convergenceProfile: "quick" | "slow" | "oscillating";
+  notes: string;
+};
+
+const CASES: DemoCase[] = [
+  {
+    id: "fast_converge",
+    title: "Fast Convergence",
+    summary: "A smooth landscape that locks onto the optimum early.",
+    tags: ["easy", "converges"],
+    searchSpace: ["x: int[0,10]", "y: float[0,1]"],
+    objectiveProfile: "fast",
+    pruneProfile: "light",
+    convergenceProfile: "quick",
+    notes: "Useful for showing the happy path.",
+  },
+  {
+    id: "prune_heavy",
+    title: "Prune Heavy",
+    summary: "Most early trials are cut before completion.",
+    tags: ["pruning", "short-circuit"],
+    searchSpace: ["x: int[0,20]", "y: float[0,1]"],
+    objectiveProfile: "noisy",
+    pruneProfile: "heavy",
+    convergenceProfile: "slow",
+    notes: "Shows frequent early exits and best-updated recovery.",
+  },
+  {
+    id: "noisy_landscape",
+    title: "Noisy Landscape",
+    summary: "Scores wobble before the sampler settles.",
+    tags: ["noise", "oscillation"],
+    searchSpace: ["x: int[0,30]", "temperature: float[0,2]"],
+    objectiveProfile: "noisy",
+    pruneProfile: "light",
+    convergenceProfile: "oscillating",
+    notes: "Keeps the curve moving so the demo can show uncertainty.",
+  },
+  {
+    id: "multi_modal",
+    title: "Multi Modal",
+    summary: "Several local optima compete before one wins.",
+    tags: ["local-minima", "exploration"],
+    searchSpace: ["x: int[0,40]", "y: float[0,1]"],
+    objectiveProfile: "multimodal",
+    pruneProfile: "late",
+    convergenceProfile: "slow",
+    notes: "Demonstrates exploration before exploitation.",
+  },
+  {
+    id: "plateau_then_drop",
+    title: "Plateau Then Drop",
+    summary: "The search stalls, then suddenly finds a much better region.",
+    tags: ["plateau", "late-breakthrough"],
+    searchSpace: ["x: int[0,50]", "cooldown: float[0,1]"],
+    objectiveProfile: "plateau",
+    pruneProfile: "late",
+    convergenceProfile: "slow",
+    notes: "Useful for showing why patience matters.",
+  },
+];
+
+export function getCases(): DemoCase[] {
+  return CASES.slice();
+}
+```
+
+Create `src/main.ts`:
+
+```typescript
+import "./styles.css";
+import { mountApp } from "./app";
+
+mountApp(document.getElementById("app"));
+```
+
+Create `src/app.ts`:
+
+```typescript
+export function mountApp(root: HTMLElement | null) {
+  if (!root) return;
+  root.innerHTML = `
+    <main class="shell">
+      <section class="panel">blackbox-tuner demo</section>
+    </main>
+  `;
+}
+```
+
+Create `src/styles.css` with a minimal full-viewport shell:
+
+```css
+:root {
+  color-scheme: light;
+  font-family: system-ui, sans-serif;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: #f5f7fb;
+  color: #111827;
+}
+
+.shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.panel {
+  padding: 24px 28px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background: white;
+}
+```
+
+Create `package.json`:
+
+```json
+{
+  "name": "blackbox-tuner-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.0",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0",
+    "vitest": "^2.0.5"
+  }
+}
+```
+
+Create `index.html`:
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>blackbox-tuner demo</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+```
+
+Create `vite.config.ts`:
+
+```typescript
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  base: "/blackbox-tuner-demo/",
+  build: {
+    outDir: "dist",
+  },
+});
+```
+
+Create `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "jsx": "preserve",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "types": []
+  },
+  "include": ["src", "tests", "vite.config.ts", "playwright.config.ts"]
+}
+```
+
+The app must build from `src/main.ts` and deploy under the `/blackbox-tuner-demo/` GitHub Pages base path.
+
+- [ ] **Step 5: Run the test to verify it passes**
 
 Run:
 
@@ -292,12 +588,12 @@ npm test -- tests/cases.test.ts -v
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 Run:
 
 ```bash
-git add package.json index.html vite.config.ts tsconfig.json src tests README.md
+git add package.json package-lock.json index.html vite.config.ts tsconfig.json src tests README.md
 git commit -m "feat: bootstrap blackbox-tuner demo shell"
 ```
 
@@ -325,6 +621,16 @@ describe("engine", () => {
     expect(types).toContain("trial_pruned");
     expect(types).toContain("best_updated");
     expect(types.at(-1)).toBe("run_completed");
+  });
+
+  it("makes the example cases behave differently enough to teach distinct patterns", () => {
+    const noisy = buildEventStream("noisy_landscape");
+    const multiModal = buildEventStream("multi_modal");
+    const plateau = buildEventStream("plateau_then_drop");
+
+    expect(noisy.filter((event) => event.type === "trial_completed").length).toBeGreaterThan(1);
+    expect(multiModal.filter((event) => event.type === "best_updated").length).toBeGreaterThan(1);
+    expect(plateau.some((event) => event.type === "trial_pruned")).toBe(true);
   });
 });
 ```
@@ -383,6 +689,7 @@ export function buildEventStream(caseId: string): DemoEvent[] {
 ```
 
 Expand `src/cases.ts` to include at least `prune_heavy`, `noisy_landscape`, and `multi_modal` so `buildEventStream()` can choose behavior by case id.
+Make `noisy_landscape` alternate between small score gains and regressions, make `multi_modal` require a few bad local optima before the better basin appears, and make `plateau_then_drop` stay flat for several trials before one sharp improvement.
 
 - [ ] **Step 4: Run the test to verify it passes**
 
@@ -591,6 +898,12 @@ export default defineConfig({
     url: "http://127.0.0.1:4173",
     reuseExistingServer: !process.env.CI,
   },
+  projects: [
+    {
+      name: "chromium",
+      use: { browserName: "chromium" },
+    },
+  ],
   use: {
     baseURL: "http://127.0.0.1:4173",
     headless: true,
@@ -620,6 +933,7 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - run: npm test
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
@@ -662,6 +976,7 @@ Add a `package.json` script for `test:e2e` that runs Playwright and a `build` sc
 Run:
 
 ```bash
+npx playwright install --with-deps chromium
 npm run test:e2e
 ```
 
@@ -717,7 +1032,19 @@ const overlay = [
 
 Expected: demo stays synthetic and public-facing.
 
-- [ ] **Step 3: Commit documentation updates**
+- [ ] **Step 3: Create and publish the public repository**
+
+Run:
+
+```bash
+git branch -M main
+gh repo create blackbox-tuner-demo --public --source . --remote origin --push
+git push -u origin main
+```
+
+Expected: a public `blackbox-tuner-demo` repository exists on GitHub, `main` tracks the published branch, and the GitHub Pages workflow can use the pushed contents.
+
+- [ ] **Step 4: Commit documentation updates**
 
 Run:
 
