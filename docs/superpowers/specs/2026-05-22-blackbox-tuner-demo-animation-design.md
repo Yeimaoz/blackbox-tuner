@@ -13,7 +13,7 @@ Create a separate public demo repo for `blackbox-tuner` that presents Optuna-sty
 2. How the tuning loop progresses.
 3. How example cases change search, pruning, and convergence behavior.
 
-This is a presentation layer only. The demo repo must stay independent from the library repo structure and must not introduce private platform terms or private data.
+This is a presentation layer only. The demo repo must stay independent from the library repo structure and must not introduce private platform terms or private data. The demo should not import the Python package at runtime; it should present a curated explanation of the public API names and flow.
 
 ## 1. Repo Boundary
 
@@ -118,6 +118,7 @@ Recommended stack:
 - CSS for layout and motion primitives.
 - SVG for charts and timeline markers.
 - Small vanilla JS controller for state and playback.
+- Thin build step for bundling static assets into a GitHub Pages-ready site.
 
 Modules:
 
@@ -133,6 +134,7 @@ case-data -> engine -> ui -> deployment
 ```
 
 The UI should render from events only. No view should need to read case internals directly.
+The API overlay should be static copy that stays aligned with the public `blackbox-tuner` API names, not a runtime-generated import from the Python package.
 
 ## 6. Error Handling
 
@@ -158,6 +160,7 @@ Required checks:
 - Best-so-far updates only when a better score appears.
 - Case switching resets playback state.
 - Static deployment loads in a browser and renders the first case.
+- Local preview can run from the same build output used for GitHub Pages.
 
 ## 8. Deployment
 
@@ -182,4 +185,3 @@ Before release:
 - Verify the first case loads.
 - Verify case switching and playback still work.
 - Verify the public URL is accessible.
-
