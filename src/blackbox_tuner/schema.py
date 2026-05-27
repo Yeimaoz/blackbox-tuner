@@ -88,6 +88,15 @@ class ParamSchema:
                 )
         return values
 
+    def drop(self, exclude: set[str]) -> ParamSchema:
+        """Return a new schema without params whose names are in *exclude*.
+
+        Useful for per-variant tuning: the portfolio config locks some param
+        values (e.g. ``entry_type="donchian"``), and the tuner should only
+        explore the remaining free params.
+        """
+        return ParamSchema([p for p in self.params if p.name not in exclude])
+
     def sanitize(self, values: dict[str, Any]) -> dict[str, Any]:
         sanitized = dict(values)
         for param in self.params:

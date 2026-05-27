@@ -48,3 +48,32 @@ def test_schema_rejects_invalid_param_names():
 def test_float_rejects_step_with_log():
     with pytest.raises(ValueError, match="step and log"):
         FloatParam("alpha", 0.001, 1.0, step=0.001, log=True)
+
+
+def test_drop_excludes_locked_params():
+    schema = ParamSchema([
+        CategoricalParam("entry_type", ["donchian", "gap", "orb"]),
+        CategoricalParam("bias", ["trend", "mr"]),
+        IntParam("entry_window", 5, 60),
+        FloatParam("atr_mult", 0.5, 2.0),
+    ])
+    reduced = schema.drop({"entry_type", "bias"})
+    assert [p.name for p in reduced.params] == ["entry_window", "atr_mult"]
+
+
+def test_drop_empty_exclude_returns_same():
+    schema = ParamSchema([
+        IntParam("entry_window", 5, 60),
+        FloatParam("atr_mult", 0.5, 2.0),
+    ])
+    assert [p.name for p in schema.drop(set()).params] == ["entry_window", "atr_mult"]
+
+
+def test_drop_preserves_original():
+    schema = ParamSchema([
+        CategoricalParam("entry_type", ["donchian", "gap"]),
+        IntParam("entry_window", 5, 60),
+    ])
+    reduced = schema.drop({"entry_type"})
+    assert len(schema.params) == 2          # original unchanged
+    assert len(reduced.params) == 1
