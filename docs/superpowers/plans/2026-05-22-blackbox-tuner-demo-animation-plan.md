@@ -313,7 +313,7 @@ Create `tsconfig.json`:
 
 ```json
 {
-  "compilerOptions": {
+  "tsconfig": {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -562,7 +562,7 @@ Create `tsconfig.json`:
 
 ```json
 {
-  "compilerOptions": {
+  "tsconfig": {
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -1100,7 +1100,7 @@ Expected: the demo is signoff-ready and the published state matches the reviewed
 After the demo repo is working, the next improvement path is:
 
 1. Add more case families and richer transitions.
-2. Add optional video export only if a presentation artifact is needed.
+2. Add video export only if a presentation artifact is needed.
 3. Keep the demo repo isolated from the library repo so the public API can evolve independently.
 
 ## Self-Review
