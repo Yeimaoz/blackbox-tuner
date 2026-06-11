@@ -50,7 +50,7 @@ User code
               │
               ├─ update best result if improved
               │
-              └─ Pruner may stop bad trials early
+              └─ (Pruner support planned; not yet active)
                     │
                     ▼
                run_completed
@@ -73,9 +73,9 @@ Sampler
   └─ balances exploration and exploitation
 
 Pruner
-  ├─ watches a running trial
-  ├─ stops clearly bad runs early
-  └─ saves compute
+  ├─ planned: watch a running trial
+  ├─ planned: stop clearly bad runs early
+  └─ not yet implemented (trial.report / trial.should_prune not called)
 ```
 
 ## Development checks

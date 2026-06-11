@@ -21,6 +21,14 @@ EventType = Literal[
 
 @dataclass(frozen=True)
 class TrialEvent:
+    """Immutable event record for a single step in a tuning run.
+
+    Known Limitation: ``frozen=True`` prevents attribute re-assignment but does
+    not make the dict fields (``params``, ``metrics``, ``artifacts``,
+    ``metadata``) deeply immutable.  Callers must not mutate these dicts after
+    the event has been constructed and passed to a sink.
+    """
+
     run_id: str
     event_type: EventType
     sequence: int

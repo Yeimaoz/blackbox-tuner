@@ -18,6 +18,17 @@ ObjectiveFn = Callable[[dict[str, Any]], float | int | ObjectiveResult]
 
 @dataclass(frozen=True)
 class TuningResult:
+    """Result of a completed tuning run.
+
+    Known Limitations:
+    - ``state`` is typed as ``str`` but ``tune()`` always returns ``"complete"``
+      on success (exceptions are raised on failure).  A future version may
+      narrow this to ``Literal["complete"]``.
+    - ``started_at`` and ``finished_at`` are ISO 8601 UTC strings
+      (``YYYY-MM-DDTHH:MM:SS.ffffffZ``), typed as ``str`` for forward
+      compatibility.
+    """
+
     run_id: str
     best_params: dict[str, Any]
     best_score: float | None
