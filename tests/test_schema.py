@@ -77,3 +77,37 @@ def test_drop_preserves_original():
     reduced = schema.drop({"entry_type"})
     assert len(schema.params) == 2          # original unchanged
     assert len(reduced.params) == 1
+
+
+# ---------------------------------------------------------------------------
+# Boundary constraint validation
+# ---------------------------------------------------------------------------
+
+def test_categorical_rejects_empty_choices():
+    with pytest.raises(ValueError, match="choices"):
+        CategoricalParam("mode", [])
+
+
+def test_float_rejects_low_greater_than_high():
+    with pytest.raises(ValueError, match="low"):
+        FloatParam("alpha", low=1.0, high=0.0)
+
+
+def test_float_rejects_nonpositive_step():
+    with pytest.raises(ValueError, match="step"):
+        FloatParam("alpha", low=0.0, high=1.0, step=-0.1)
+
+
+def test_int_rejects_low_greater_than_high():
+    with pytest.raises(ValueError, match="low"):
+        IntParam("count", low=5, high=2)
+
+
+def test_int_rejects_nonpositive_step():
+    with pytest.raises(ValueError, match="step"):
+        IntParam("count", low=0, high=10, step=0)
+
+
+def test_schema_rejects_duplicate_param_names():
+    with pytest.raises(ValueError, match="unique"):
+        ParamSchema([IntParam("x", 0, 1), IntParam("x", 2, 4)])
