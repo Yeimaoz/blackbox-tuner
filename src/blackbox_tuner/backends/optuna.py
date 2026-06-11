@@ -24,10 +24,14 @@ def run_optuna(
     best_score: float | None = None
     best_trial_number: int | None = None
 
+    # Track per-trial context (params, started time, exc) for after-trial callback.
+    _trial_context: dict[int, dict[str, Any]] = {}
+
     def optuna_objective(trial: optuna.Trial) -> float:
         nonlocal best_score, best_trial_number
         params = schema.suggest(trial)
         started = time.perf_counter()
+        _trial_context[trial.number] = {"params": params, "started": started}
         emitter.emit("trial_started", trial_number=trial.number, params=params, state="running")
         try:
             result = normalize_objective_result(objective(params))
@@ -43,16 +47,10 @@ def run_optuna(
             )
             raise optuna.exceptions.TrialPruned(str(exc)) from exc
         except Exception as exc:
-            duration_ms = int((time.perf_counter() - started) * 1000)
-            emitter.emit(
-                "trial_failed",
-                trial_number=trial.number,
-                params=params,
-                state="failed",
-                duration_ms=duration_ms,
-                error=repr(exc),
-            )
-            raise optuna.exceptions.TrialPruned() from exc
+            # Store the exception so the after-trial callback can emit trial_failed.
+            _trial_context[trial.number]["exc"] = exc
+            # Re-raise so Optuna records the trial as FAIL (not PRUNED).
+            raise
 
         duration_ms = int((time.perf_counter() - started) * 1000)
         emitter.emit(
@@ -81,7 +79,34 @@ def run_optuna(
             )
         return result.score
 
-    study.optimize(optuna_objective, n_trials=config.n_trials, show_progress_bar=False, catch=())
+    def _after_trial_callback(
+        study: optuna.Study,
+        frozen_trial: optuna.trial.FrozenTrial,
+    ) -> None:
+        """Emit trial_failed for trials that Optuna recorded as FAIL."""
+        if frozen_trial.state != optuna.trial.TrialState.FAIL:
+            return
+        ctx = _trial_context.pop(frozen_trial.number, None)
+        if ctx is None:
+            return
+        exc = ctx.get("exc")
+        duration_ms = int((time.perf_counter() - ctx["started"]) * 1000)
+        emitter.emit(
+            "trial_failed",
+            trial_number=frozen_trial.number,
+            params=ctx["params"],
+            state="failed",
+            duration_ms=duration_ms,
+            error=repr(exc) if exc is not None else "unknown",
+        )
+
+    study.optimize(
+        optuna_objective,
+        n_trials=config.n_trials,
+        show_progress_bar=False,
+        catch=(Exception,),
+        callbacks=[_after_trial_callback],
+    )
 
     complete_trials = [trial for trial in study.trials if trial.state == optuna.trial.TrialState.COMPLETE]
     if not complete_trials:
