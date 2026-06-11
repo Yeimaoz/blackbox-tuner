@@ -2,6 +2,8 @@ import tarfile
 import zipfile
 from pathlib import Path
 
+import pytest
+
 
 FORBIDDEN_TERMS = [
     bytes.fromhex(value).decode("utf-8")
@@ -25,11 +27,19 @@ FORBIDDEN_TERMS = [
         "446973636f7264",
         "776562686f6f6b",
         "6d61696c626f78",
+        "5965696d616f7a",   # username / home-dir path leak guard
     ]
 ]
 
 
 def test_public_tree_has_no_private_terms():
+    """Scan working tree for private terms.
+
+    Known Limitation: git history is not scanned.  If a private term was
+    committed and later removed, the term still exists in old commits and is
+    visible to anyone who clones the repo.  This test only covers the current
+    working tree.
+    """
     root = Path(__file__).resolve().parents[1]
     checked_suffixes = {".py", ".md", ".toml"}
     ignored_parts = {".git", ".venv", ".pytest_cache", "build", "dist"}
@@ -48,8 +58,11 @@ def test_public_tree_has_no_private_terms():
 
 def test_release_archives_have_no_private_terms():
     root = Path(__file__).resolve().parents[1]
+    artifacts = list(root.glob("dist/*"))
+    if not artifacts:
+        pytest.skip("dist/ has no build artifacts; run 'python -m build' first")
     offenders = []
-    for path in root.glob("dist/*"):
+    for path in artifacts:
         if path.suffix == ".whl":
             offenders.extend(_scan_zip(path))
         elif path.suffixes[-2:] == [".tar", ".gz"]:
