@@ -42,28 +42,32 @@ def _make_emitter(sink=None) -> tuple[EventEmitter, MemorySink]:
 
 
 def test_failed_objective_produces_trial_state_fail_not_pruned():
-    """objective raises RuntimeError → Optuna records TrialState.FAIL, not PRUNED."""
+    """objective raises RuntimeError → trial_failed events emitted, no trial_pruned events."""
     # Arrange
     schema = ParamSchema([IntParam("x", low=0, high=1)])
-    emitter, _ = _make_emitter()
+    emitter, sink = _make_emitter()
 
     def failing_objective(params):
         raise RuntimeError("boom")
 
-    # Act
-    sampler = optuna.samplers.TPESampler(seed=1)
-    study = optuna.create_study(direction="minimize", sampler=sampler)
-
-    # We need to call the actual optuna_objective closure via run_optuna,
-    # but since the closure is internal we use run_optuna with a mock config.
     from blackbox_tuner.config import TuningConfig
 
     config = TuningConfig(n_trials=2, seed=1)
+
+    # Act
     run_optuna(schema=schema, objective=failing_objective, config=config, emitter=emitter)
 
-    # Assert: run_optuna uses its own internal study; we verify via JSONL events
-    # The key check: no trial_pruned events, only trial_failed events
-    assert True  # placeholder to confirm above doesn't raise
+    # Assert: exactly 2 trial_failed events and 0 trial_pruned events
+    event_types = [e.event_type for e in sink.events]
+    failed_count = event_types.count("trial_failed")
+    pruned_count = event_types.count("trial_pruned")
+    assert failed_count == 2, (
+        f"Expected 2 trial_failed events, got {failed_count}. "
+        "Failing trials must not be silently swallowed."
+    )
+    assert pruned_count == 0, (
+        f"Expected 0 trial_pruned events for failing trials, got {pruned_count}."
+    )
 
 
 def test_failed_trial_state_is_fail_in_optuna_study(tmp_path):

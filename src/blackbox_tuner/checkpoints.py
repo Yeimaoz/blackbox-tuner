@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from .errors import CheckpointError
 from .events import TrialEvent
 
 
+@runtime_checkable
 class CheckpointSink(Protocol):
     def write(self, event: TrialEvent) -> None:
         """Persist one event or raise CheckpointError."""

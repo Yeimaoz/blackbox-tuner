@@ -17,8 +17,13 @@ def test_tune_returns_best_params():
 
     result = tune(schema=schema, objective=objective, config=TuningConfig(n_trials=30, seed=3))
 
-    assert result.best_params
-    assert result.best_score is not None
+    assert set(result.best_params.keys()) == {"x", "y"}, (
+        f"best_params should contain exactly keys 'x' and 'y', got {set(result.best_params.keys())}"
+    )
+    assert isinstance(result.best_score, float), (
+        f"best_score should be a float, got {type(result.best_score)}"
+    )
+    assert result.best_score <= 0.0, "maximizing negative-quadratic; best_score should be <= 0"
     assert result.n_trials == 30
     assert result.state == "complete"
 
@@ -68,6 +73,9 @@ def test_failed_objective_emits_trial_failed(tmp_path):
     events = [json.loads(line) for line in path.read_text().splitlines()]
     assert result.state == "complete"
     assert any(event["event_type"] == "trial_failed" for event in events)
+    # All trials failed → best_params is empty and best_score is None
+    assert result.best_params == {}, f"Expected empty best_params, got {result.best_params}"
+    assert result.best_score is None, f"Expected best_score=None, got {result.best_score}"
 
 
 def test_pruned_objective_emits_trial_pruned(tmp_path):
@@ -120,3 +128,25 @@ def test_checkpoint_failure_emits_run_failed_to_healthy_sink():
 def test_tuning_config_rejects_invalid_direction():
     with pytest.raises(ValueError, match="direction"):
         TuningConfig(direction="sideways")  # type: ignore[arg-type]
+
+
+def test_tune_direction_minimize_selects_smallest_score():
+    """direction='minimize' end-to-end: best_score should be near the minimum of the objective."""
+    schema = ParamSchema([IntParam("x", low=0, high=10)])
+
+    def objective(params):
+        return float((params["x"] - 3) ** 2)  # minimum at x=3, value=0
+
+    result = tune(
+        schema=schema,
+        objective=objective,
+        config=TuningConfig(n_trials=20, seed=7, direction="minimize"),
+    )
+
+    assert result.state == "complete"
+    assert result.best_score is not None
+    # With 20 trials and seed=7, TPE should find x=3 (score=0) or close
+    assert result.best_score <= 4.0, (
+        f"minimize direction should find a low score; got {result.best_score}"
+    )
+    assert result.best_params.get("x") is not None, "best_params must contain 'x'"

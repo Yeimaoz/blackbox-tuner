@@ -19,6 +19,10 @@ def run_optuna(
     config: TuningConfig,
     emitter: EventEmitter,
 ) -> dict[str, Any]:
+    # Library default: suppress Optuna's per-trial INFO messages so callers'
+    # log streams are not polluted.  Users can re-enable by calling
+    # optuna.logging.set_verbosity(optuna.logging.INFO) before tune().
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
     sampler = optuna.samplers.TPESampler(seed=config.seed)
     study = optuna.create_study(direction=config.direction, sampler=sampler)
     best_score: float | None = None

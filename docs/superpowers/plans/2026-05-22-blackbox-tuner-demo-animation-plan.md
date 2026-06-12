@@ -14,7 +14,7 @@
 
 Create a new repository at:
 
-`/home/Yeimaoz/projects/blackbox-tuner-demo`
+`./`
 
 Do not add frontend runtime code to the `blackbox-tuner` library repo. This demo repo must remain separate and public.
 
@@ -48,17 +48,17 @@ Do not create a backend, database, or runtime Python integration. The demo must 
 ## Task 1: Bootstrap the Static Demo Shell
 
 **Files:**
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/package.json`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/index.html`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/vite.config.ts`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/tsconfig.json`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/main.ts`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/app.ts`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/api-copy.ts`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/cases.ts`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/styles.css`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/README.md`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/tests/cases.test.ts`
+- Create: `.//package.json`
+- Create: `.//index.html`
+- Create: `.//vite.config.ts`
+- Create: `.//tsconfig.json`
+- Create: `.//src/main.ts`
+- Create: `.//src/app.ts`
+- Create: `.//src/api-copy.ts`
+- Create: `.//src/cases.ts`
+- Create: `.//src/styles.css`
+- Create: `.//README.md`
+- Create: `.//tests/cases.test.ts`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -600,9 +600,9 @@ git commit -m "feat: bootstrap blackbox-tuner demo shell"
 ## Task 2: Implement the Synthetic Event Engine
 
 **Files:**
-- Modify: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/cases.ts`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/engine.ts`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/tests/engine.test.ts`
+- Modify: `.//src/cases.ts`
+- Create: `.//src/engine.ts`
+- Create: `.//tests/engine.test.ts`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -713,10 +713,10 @@ git commit -m "feat: add synthetic demo engine"
 ## Task 3: Render Playback and API Overlay
 
 **Files:**
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/render.ts`
-- Modify: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/app.ts`
-- Modify: `/home/Yeimaoz/projects/blackbox-tuner-demo/src/styles.css`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/tests/playback.test.ts`
+- Create: `.//src/render.ts`
+- Modify: `.//src/app.ts`
+- Modify: `.//src/styles.css`
+- Create: `.//tests/playback.test.ts`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -856,10 +856,10 @@ git commit -m "feat: render demo playback"
 ## Task 4: Add Browser Smoke and GitHub Pages Deployment
 
 **Files:**
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/playwright.config.ts`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/tests/e2e.spec.ts`
-- Create: `/home/Yeimaoz/projects/blackbox-tuner-demo/.github/workflows/deploy.yml`
-- Modify: `/home/Yeimaoz/projects/blackbox-tuner-demo/README.md`
+- Create: `.//playwright.config.ts`
+- Create: `.//tests/e2e.spec.ts`
+- Create: `.//.github/workflows/deploy.yml`
+- Modify: `.//README.md`
 
 - [ ] **Step 1: Write the failing browser smoke test**
 
@@ -994,7 +994,7 @@ git commit -m "feat: add browser smoke and deployment"
 ## Task 5: Final Review and Public Publish
 
 **Files:**
-- Modify: `/home/Yeimaoz/projects/blackbox-tuner-demo/README.md`
+- Modify: `.//README.md`
 
 - [ ] **Step 1: Run final verification**
 
